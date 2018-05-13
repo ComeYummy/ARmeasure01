@@ -21,6 +21,10 @@ class ViewController: UIViewController, ARSCNViewDelegate {
     @IBOutlet var statusLabel: UILabel!
     @IBOutlet var resetBtn: UIButton!
     
+    //timer同期用変数定義
+    var isMeasuring = false
+    var timer: Timer!
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
