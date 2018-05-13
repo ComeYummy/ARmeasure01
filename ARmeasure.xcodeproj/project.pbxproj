@@ -14,6 +14,10 @@
 		C5788EF920A764F900C768FE /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = C5788EF720A764F900C768FE /* LaunchScreen.storyboard */; };
 		C5788F0420A764FA00C768FE /* ARmeasureTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C5788F0320A764FA00C768FE /* ARmeasureTests.swift */; };
 		C5788F0F20A764FA00C768FE /* ARmeasureUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C5788F0E20A764FA00C768FE /* ARmeasureUITests.swift */; };
+		C5788F2120A765DC00C768FE /* ARSampleCommon.swift in Sources */ = {isa = PBXBuildFile; fileRef = C5788F1D20A765DC00C768FE /* ARSampleCommon.swift */; };
+		C5788F2220A765DC00C768FE /* SceneKitUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = C5788F1E20A765DC00C768FE /* SceneKitUtils.swift */; };
+		C5788F2320A765DC00C768FE /* TrackingState+Description.swift in Sources */ = {isa = PBXBuildFile; fileRef = C5788F1F20A765DC00C768FE /* TrackingState+Description.swift */; };
+		C5788F2420A765DC00C768FE /* ARPlaneAnchor+Visualize.swift in Sources */ = {isa = PBXBuildFile; fileRef = C5788F2020A765DC00C768FE /* ARPlaneAnchor+Visualize.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -47,6 +51,10 @@
 		C5788F0A20A764FA00C768FE /* ARmeasureUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ARmeasureUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		C5788F0E20A764FA00C768FE /* ARmeasureUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ARmeasureUITests.swift; sourceTree = "<group>"; };
 		C5788F1020A764FA00C768FE /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		C5788F1D20A765DC00C768FE /* ARSampleCommon.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ARSampleCommon.swift; sourceTree = "<group>"; };
+		C5788F1E20A765DC00C768FE /* SceneKitUtils.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SceneKitUtils.swift; sourceTree = "<group>"; };
+		C5788F1F20A765DC00C768FE /* TrackingState+Description.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "TrackingState+Description.swift"; sourceTree = "<group>"; };
+		C5788F2020A765DC00C768FE /* ARPlaneAnchor+Visualize.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "ARPlaneAnchor+Visualize.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -77,6 +85,7 @@
 		C5788EE220A764F600C768FE = {
 			isa = PBXGroup;
 			children = (
+				C5788F1C20A765DC00C768FE /* common */,
 				C5788EED20A764F700C768FE /* ARmeasure */,
 				C5788F0220A764FA00C768FE /* ARmeasureTests */,
 				C5788F0D20A764FA00C768FE /* ARmeasureUITests */,
@@ -123,6 +132,17 @@
 				C5788F1020A764FA00C768FE /* Info.plist */,
 			);
 			path = ARmeasureUITests;
+			sourceTree = "<group>";
+		};
+		C5788F1C20A765DC00C768FE /* common */ = {
+			isa = PBXGroup;
+			children = (
+				C5788F1D20A765DC00C768FE /* ARSampleCommon.swift */,
+				C5788F1E20A765DC00C768FE /* SceneKitUtils.swift */,
+				C5788F1F20A765DC00C768FE /* TrackingState+Description.swift */,
+				C5788F2020A765DC00C768FE /* ARPlaneAnchor+Visualize.swift */,
+			);
+			path = common;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -257,7 +277,11 @@
 			buildActionMask = 2147483647;
 			files = (
 				C5788EF120A764F700C768FE /* ViewController.swift in Sources */,
+				C5788F2220A765DC00C768FE /* SceneKitUtils.swift in Sources */,
+				C5788F2120A765DC00C768FE /* ARSampleCommon.swift in Sources */,
+				C5788F2420A765DC00C768FE /* ARPlaneAnchor+Visualize.swift in Sources */,
 				C5788EEF20A764F700C768FE /* AppDelegate.swift in Sources */,
+				C5788F2320A765DC00C768FE /* TrackingState+Description.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
