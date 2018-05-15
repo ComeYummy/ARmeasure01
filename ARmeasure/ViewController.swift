@@ -15,6 +15,7 @@ class ViewController: UIViewController, ARSCNViewDelegate {
     private var startNode: SCNNode?
     private var endNode: SCNNode?
     private var lineNode: SCNNode?
+    private var textNode: SCNNode?
     
     @IBOutlet var sceneView: ARSCNView!
     @IBOutlet var trackingStateLabel: UILabel!
@@ -27,15 +28,22 @@ class ViewController: UIViewController, ARSCNViewDelegate {
     var isMeasuring = false
     var timer: Timer!
     
+    //ARsessionフラグ
+//    var ARsessionFlag = false
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
         // Set the view's delegate
         sceneView.delegate = self
-        sceneView.showsStatistics = true
+
         
-        // デバッグオプションをセット
-        sceneView.debugOptions = [ARSCNDebugOptions.showFeaturePoints]
+        // デバッグオプションをセット。デフォルトはoff
+        sceneView.debugOptions = []
+        sceneView.showsStatistics = false
+        trackingStateLabel.isHidden = true
+        
+//       sceneView.debugOptions = [.renderAsWireframe, ARSCNDebugOptions.showWorldOrigin, ARSCNDebugOptions.showFeaturePoints]
         
         // シーンを生成してARSCNViewにセット
         sceneView.scene = SCNScene()
@@ -47,18 +55,14 @@ class ViewController: UIViewController, ARSCNViewDelegate {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         
-        // セッション開始
-        let configuration = ARWorldTrackingConfiguration()
-        configuration.planeDetection = .horizontal
-        // 現実の環境光に合わせてレンダリングしてくれるらしい
-        configuration.isLightEstimationEnabled = true
-        // Run the view's session
-        sceneView.session.run(configuration, options: [.resetTracking, .removeExistingAnchors])
+        //ARのsession開始
+        beginSession()
         
         //timer作成、update関数を呼び出し続ける
         timer = Timer.scheduledTimer(timeInterval: 0.1, target: self, selector: #selector(self.update), userInfo: nil, repeats: true)
         //timerスタート
         timer.fire()
+        
     }
     
     // MARK: - Private
@@ -84,14 +88,32 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         return lineNode
     }
     
+    //configurationを設定してsession開始
+    func beginSession(){
+        // セッション開始
+        let configuration = ARWorldTrackingConfiguration()
+        //水平方向の平面検知
+        //        configuration.planeDetection = .horizontal
+        //垂直方向の平面検知
+        //        configuration.planeDetection = .vertical
+        //垂直・水平方向の平面検知
+        configuration.planeDetection = [.vertical, .horizontal]
+        
+        // 現実の環境光に合わせてレンダリング
+        configuration.isLightEstimationEnabled = true
+        // Run the view's session
+        sceneView.session.run(configuration, options: [.resetTracking, .removeExistingAnchors])
+        
+    }
+    
     //hittestを実行して、始点を配置
     private func hitTestToSphere(_ pos: CGPoint) {
         
-        // 平面を対象にヒットテストを実行
-        let results = sceneView.hitTest(pos, types: [.existingPlane])
+        // 検出平面と特徴点を対象にヒットテストを実行
+        let results = sceneView.hitTest(pos, types: [.existingPlaneUsingExtent, .featurePoint])
         
-        // 平面もしくは特徴点を対象にヒットテストを実行
-        //        let results = sceneView.hitTest(pos, types: [.existingPlane, .featurePoint])
+        // 平面のみを対象にヒットテストを実行
+//      let results = sceneView.hitTest(pos, types: [.existingPlaneUsingExtent])
         
         // 最も近い（手前にある）結果を取得
         guard let result = results.first else {return}
@@ -107,11 +129,8 @@ class ViewController: UIViewController, ARSCNViewDelegate {
     //hittestを実行して、終点を配置
     private func hitTestToEndSphere(_ pos: CGPoint) {
         
-        // 平面を対象にヒットテストを実行
-        let results = sceneView.hitTest(pos, types: [.existingPlane])
-        
-        // 平面もしくは特徴点を対象にヒットテストを実行
-        //        let results = sceneView.hitTest(pos, types: [.existingPlane, .featurePoint])
+        // 検出平面と特徴点を対象にヒットテストを実行
+        let results = sceneView.hitTest(pos, types: [.existingPlaneUsingExtent, .featurePoint])
         
         // 最も近い（手前にある）結果を取得
         guard let result = results.first else {return}
@@ -134,10 +153,11 @@ class ViewController: UIViewController, ARSCNViewDelegate {
             //0.1秒ごとにendNodeを画面中心点とする。
             // 始点はもう決まっているか？
             if let startNode = startNode {
-                // 終点が既に決まっている場合はendNodeとlineNodeを一度removeする。
+                // 終点が既に決まっている場合はendNodeとlineNode,textNodeを一度removeする。
                     if let endNode = endNode {
                         endNode.removeFromParentNode()
                         lineNode?.removeFromParentNode()
+                        textNode?.removeFromParentNode()
                     }
 
                 //画面2D中心座標の取得
@@ -146,7 +166,7 @@ class ViewController: UIViewController, ARSCNViewDelegate {
                 //hitTest&終点の配置。endNodeの再設定
                 hitTestToEndSphere(updateCenterPositon)
                 
-                // 始点と終点の距離を計算する
+                // 始点と終点の距離を計算する[m]
                 let distance = ((endNode?.position)! - startNode.position).length()
                 print("distance: \(distance) [m]")
                 
@@ -154,7 +174,12 @@ class ViewController: UIViewController, ARSCNViewDelegate {
                 lineNode = drawLine(from: startNode, to: endNode!, length: distance)
                 
                 // ラベルに表示
-                statusLabel.text = String(format: "Distance: %.2f [m]", distance)
+                statusLabel.text = String(format: "Distance: %.2f [cm]", distance*100)
+                
+                //textnode表記を作成
+                let textMessage = String(format: "%.2f cm", distance*100)
+                //textnodeの追加
+                appendtText(message: textMessage)
             } else {
                 print("if letでstartNodeが存在しないとき")
             }
@@ -169,6 +194,8 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         //        guard let touch = touches.first else {return}
         //        let pos = touch.location(in: sceneView)
         
+        //statusLabelの表示
+        statusLabel.isHidden = false
         //画面2D中心座標の取得
         let centerPosition2D = sceneView.center //CGPoint型
         
@@ -187,10 +214,53 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         }
     }
     
+    //計測した距離をAR上にテキスト表示
+    func appendtText(message:String){
+        let str = message
+        let depth:CGFloat = 0.01
+        let text = SCNText(string: str, extrusionDepth: depth)
+//        text.font = UIFont(name: "HelveticaNeue-Light", size: 0.5);
+        text.font = UIFont.systemFont(ofSize:1)
+        textNode = SCNNode(geometry: text)
+        
+        //textNodeの0座標をendNodeの座標に設定
+        textNode?.position = (endNode?.position)!
+        
+        // 縮小
+        let scaleValue = 0.05
+        textNode?.scale = SCNVector3(scaleValue, scaleValue, scaleValue)
+        
+        sceneView.scene.rootNode.addChildNode(textNode!)
+    }
+    
+    
+    
     // MARK: - Actions
     
     @IBAction func resetBtnTapped(_ sender: UIButton) {
-        reset()
+        
+        //alert表示前の設定
+        let alertController = UIAlertController(title: "AR初期化", message: "ARをはじめの状態にもどします。\n検知した平面は削除されます。", preferredStyle: .alert)
+        
+        let action1 = UIAlertAction(title: "OK", style: .default) { (action:UIAlertAction) in
+            print("OKが押された")
+            //nodeをreset
+            self.reset()
+            //ARをstop
+            self.stopARsession()
+            //ARsession開始
+            self.beginSession()
+        }
+        
+        let action2 = UIAlertAction(title: "キャンセル", style: .default) { (action:UIAlertAction) in
+            print("キャンセルが押された")
+        }
+        
+        alertController.addAction(action1)
+        alertController.addAction(action2)
+        //alert表示
+        self.present(alertController, animated: true, completion: nil)
+
     }
     
     //reset処理（初期化）
@@ -203,10 +273,22 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         endNode?.removeFromParentNode()
         //node自体を削除
         endNode = nil
+        //nodeを親nodeから削除
+        textNode?.removeFromParentNode()
+        //node自体を削除
+        textNode = nil
         statusLabel.isHidden = true
         
         //isMeasuringフラグを初期化
         isMeasuring = false
+    }
+    
+    //AR停止
+    private func stopARsession(){
+        //ARsession停止
+        sceneView.session.pause()
+        //ARsessionFlag
+//        ARsessionFlag = false
     }
     
     
@@ -222,17 +304,43 @@ class ViewController: UIViewController, ARSCNViewDelegate {
                 self.statusLabel.text = "始点をタップしてください"
             }
         })
+        
+        //textnodeの向きを常にカメラ側にする。
+        //カメラ座標の取得
+        if let camera = sceneView.pointOfView {
+            //textNodeのみオイラー角をカメラと同じにする。カメラ回転とnodeの回転を合わせる。
+            textNode?.rotation = camera.rotation
+            
+//            let x = Double(camera.eulerAngles.x) * 180 / Double.pi
+//            let y = Double(camera.eulerAngles.y) * 180 / Double.pi
+//            let z = Double(camera.eulerAngles.z) * 180 / Double.pi
+//            print(String(format: "eulerAngles x:%.2f y:%.2f z:%.2f", x/10, y/10, z/10))
+        }
     }
     
     func renderer(_ renderer: SCNSceneRenderer, didAdd node: SCNNode, for anchor: ARAnchor) {
         guard let planeAnchor = anchor as? ARPlaneAnchor else {fatalError()}
+        // 平面検知したときanchorをprint
         print("anchor:\(anchor), node: \(node), node geometry: \(String(describing: node.geometry))")
+        
+        // 平面アンカーを可視化
         planeAnchor.addPlaneNode(on: node, color: UIColor.bookYellow.withAlphaComponent(0.1))
+        
+        // 仮想オブジェクトのノードを作成
+        let virtualObjectNode = loadModel()
+        
+        DispatchQueue.main.async(execute: {
+            // 仮想オブジェクトを乗せる
+            node.addChildNode(virtualObjectNode)
+        })
+        
     }
     
     func renderer(_ renderer: SCNSceneRenderer, didUpdate node: SCNNode, for anchor: ARAnchor) {
         guard let planeAnchor = anchor as? ARPlaneAnchor else {fatalError()}
         planeAnchor.updatePlaneNode(on: node)
+        
+        
     }
     
     func renderer(_ renderer: SCNSceneRenderer, didRemove node: SCNNode, for anchor: ARAnchor) {
@@ -246,15 +354,47 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         trackingStateLabel.text = camera.trackingState.description
     }
     
+    
     // 画面disapper時の動作
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
         
-        //ARsession停止
-        sceneView.session.pause()
+        //ARをstop
+        stopARsession()
         //timer停止
         timer.invalidate()
+
     }
+    
+    //平面検知したときに呼び出し
+    private func loadModel() -> SCNNode {
+        guard let scene = SCNScene(named: "duck.scn", inDirectory: "models.scnassets/duck") else {fatalError()}
+        
+        let modelNode = SCNNode()
+        for child in scene.rootNode.childNodes {
+            modelNode.addChildNode(child)
+        }
+        
+        return modelNode
+    }
+    
+    //debag用onoffスイッチ
+    @IBAction func debugSwitch(_ sender: UISwitch) {
+        if ( sender.isOn ) {
+            //onのときはdebugOptionを有効に
+            sceneView.debugOptions = [ARSCNDebugOptions.showFeaturePoints]
+            sceneView.showsStatistics = true
+            trackingStateLabel.isHidden = false
+        } else {
+            //offは無効
+            sceneView.debugOptions = []
+            sceneView.showsStatistics = false
+            trackingStateLabel.isHidden = true
+        }
+        
+    }
+    
+    
     
 
 }
