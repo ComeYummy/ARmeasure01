@@ -21,6 +21,7 @@ class ViewController: UIViewController, ARSCNViewDelegate {
     @IBOutlet var trackingStateLabel: UILabel!
     @IBOutlet var statusLabel: UILabel!
     @IBOutlet var resetBtn: UIButton!
+    @IBOutlet weak var mainBtn: UIButton!
     
     var startPosition: SCNVector3!
     
@@ -189,30 +190,31 @@ class ViewController: UIViewController, ARSCNViewDelegate {
     
     // MARK: - Touch Handlers
     
-    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
-        //        // タップ位置のスクリーン座標を取得
-        //        guard let touch = touches.first else {return}
-        //        let pos = touch.location(in: sceneView)
-        
-        //statusLabelの表示
-        statusLabel.isHidden = false
-        //画面2D中心座標の取得
-        let centerPosition2D = sceneView.center //CGPoint型
-        
-        //isMeasuringで場合分け
-        if isMeasuring == false {
-            //reset処理
-            reset()
-            //isMeasuringのフラグ変更
-            isMeasuring = true
-            //hitTest&始点の配置
-            hitTestToSphere(centerPosition2D)
-        //isMeasuringがtrueのときに画面タップ時の動作
-        }else if isMeasuring == true {
-            //isMeasuringのフラグ変更, これでupdateの動作が止まる。
-            isMeasuring = false
-        }
-    }
+    //画面全体タップを認識する場合。
+//    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+//        //        // タップ位置のスクリーン座標を取得
+//        //        guard let touch = touches.first else {return}
+//        //        let pos = touch.location(in: sceneView)
+//
+//        //statusLabelの表示
+//        statusLabel.isHidden = false
+//        //画面2D中心座標の取得
+//        let centerPosition2D = sceneView.center //CGPoint型
+//
+//        //isMeasuringで場合分け
+//        if isMeasuring == false {
+//            //reset処理
+//            reset()
+//            //isMeasuringのフラグ変更
+//            isMeasuring = true
+//            //hitTest&始点の配置
+//            hitTestToSphere(centerPosition2D)
+//        //isMeasuringがtrueのときに画面タップ時の動作
+//        }else if isMeasuring == true {
+//            //isMeasuringのフラグ変更, これでupdateの動作が止まる。
+//            isMeasuring = false
+//        }
+//    }
     
     //計測した距離をAR上にテキスト表示
     func appendtText(message:String){
@@ -281,6 +283,8 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         
         //isMeasuringフラグを初期化
         isMeasuring = false
+        //mainBtn画像変更
+        mainBtn.setImage(changeButtonImage(flag: isMeasuring), for: UIControlState())
     }
     
     //AR停止
@@ -377,6 +381,47 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         
         return modelNode
     }
+    
+    //撮影ボタンタップ
+    @IBAction func buttonTapped(_ sender: UIButton) {
+        //        // タップ位置のスクリーン座標を取得
+        //        guard let touch = touches.first else {return}
+        //        let pos = touch.location(in: sceneView)
+        
+        //statusLabelの表示
+        statusLabel.isHidden = false
+        //画面2D中心座標の取得
+        let centerPosition2D = sceneView.center //CGPoint型
+        
+        //isMeasuringで場合分け
+        if isMeasuring == false {
+            //reset処理
+            reset()
+            //isMeasuringのフラグ変更
+            isMeasuring = true
+            //isMeasuringフラグに合わせて、ボタン画像変更
+            sender.setImage(changeButtonImage(flag: isMeasuring), for: UIControlState())
+            //hitTest&始点の配置
+            hitTestToSphere(centerPosition2D)
+            //isMeasuringがtrueのときに画面タップ時の動作
+        }else if isMeasuring == true {
+            //isMeasuringのフラグ変更, これでupdateの動作が止まる。
+            isMeasuring = false
+            //isMeasuringフラグに合わせて、ボタン画像変更
+            sender.setImage(changeButtonImage(flag: isMeasuring), for: UIControlState())
+        }
+    }
+    
+    //isMeasuringフラグでボタン画像変更
+    func changeButtonImage(flag:Bool) -> UIImage{
+        if flag{
+            return UIImage(named:"button02.png")!//停止ボタン
+        }else{
+            return UIImage(named:"button01.png")!//開始ボタン
+        }
+    }
+        
+        
     
     //debag用onoffスイッチ
     @IBAction func debugSwitch(_ sender: UISwitch) {

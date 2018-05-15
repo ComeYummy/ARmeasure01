@@ -21,6 +21,7 @@
 		C5788F2620A86C0C00C768FE /* models.scnassets in Resources */ = {isa = PBXBuildFile; fileRef = C5788F2520A86C0C00C768FE /* models.scnassets */; };
 		C5788F2820A88AF300C768FE /* text.scn in Resources */ = {isa = PBXBuildFile; fileRef = C5788F2720A88AF300C768FE /* text.scn */; };
 		C5788F2C20AB1E9700C768FE /* TutorialViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C5788F2B20AB1E9700C768FE /* TutorialViewController.swift */; };
+		C5788F2E20AB220A00C768FE /* KerningLabel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C5788F2D20AB220A00C768FE /* KerningLabel.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -61,6 +62,7 @@
 		C5788F2520A86C0C00C768FE /* models.scnassets */ = {isa = PBXFileReference; lastKnownFileType = wrapper.scnassets; path = models.scnassets; sourceTree = "<group>"; };
 		C5788F2720A88AF300C768FE /* text.scn */ = {isa = PBXFileReference; lastKnownFileType = file.bplist; path = text.scn; sourceTree = "<group>"; };
 		C5788F2B20AB1E9700C768FE /* TutorialViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TutorialViewController.swift; sourceTree = "<group>"; };
+		C5788F2D20AB220A00C768FE /* KerningLabel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KerningLabel.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -121,6 +123,7 @@
 				C5788EFA20A764F900C768FE /* Info.plist */,
 				C5788F2720A88AF300C768FE /* text.scn */,
 				C5788F2B20AB1E9700C768FE /* TutorialViewController.swift */,
+				C5788F2D20AB220A00C768FE /* KerningLabel.swift */,
 			);
 			path = ARmeasure;
 			sourceTree = "<group>";
@@ -290,6 +293,7 @@
 				C5788EF120A764F700C768FE /* ViewController.swift in Sources */,
 				C5788F2C20AB1E9700C768FE /* TutorialViewController.swift in Sources */,
 				C5788F2220A765DC00C768FE /* SceneKitUtils.swift in Sources */,
+				C5788F2E20AB220A00C768FE /* KerningLabel.swift in Sources */,
 				C5788F2120A765DC00C768FE /* ARSampleCommon.swift in Sources */,
 				C5788F2420A765DC00C768FE /* ARPlaneAnchor+Visualize.swift in Sources */,
 				C5788EEF20A764F700C768FE /* AppDelegate.swift in Sources */,

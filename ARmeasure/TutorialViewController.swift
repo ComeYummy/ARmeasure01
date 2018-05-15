@@ -10,10 +10,20 @@ import UIKit
 
 class TutorialViewController: UIViewController {
 
+    @IBOutlet weak var textView: UITextView!
     override func viewDidLoad() {
         super.viewDidLoad()
 
         // Do any additional setup after loading the view.
+        
+        //行間の調整
+        let style = NSMutableParagraphStyle()
+        style.lineSpacing = 20
+        let attributes = [kCTParagraphStyleAttributeName : style]
+        textView.attributedText = NSAttributedString(string: textView.text,
+                                                     attributes: attributes as [NSAttributedStringKey : Any])
+        textView.font = UIFont.systemFont(ofSize: 20)
+        
     }
 
     override func didReceiveMemoryWarning() {
