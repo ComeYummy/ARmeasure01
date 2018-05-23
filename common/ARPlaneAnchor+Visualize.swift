@@ -4,6 +4,26 @@ import ARKit
 
 extension ARPlaneAnchor {
     
+    //ShapedPlaneを追加する場合
+    func addPlaneNode(on node: SCNNode, geometry: SCNGeometry, contents: Any) -> SCNNode {
+        guard let material = geometry.materials.first else { fatalError() }
+        
+        if let program = contents as? SCNProgram {
+            material.program = program
+        } else {
+            material.diffuse.contents = contents
+        }
+        
+        let planeNode = SCNNode(geometry: geometry)
+        
+        DispatchQueue.main.async(execute: {
+            node.addChildNode(planeNode)
+        })
+        
+        return planeNode
+    }
+    
+    //四角いPlaneを検知する場合
     func addPlaneNode(on node: SCNNode, color: UIColor) {
         
         // 平面ジオメトリを作成

@@ -9,21 +9,29 @@
 import UIKit
 import SceneKit
 import ARKit
+import SCLAlertView
+import BWWalkthrough
 
-class ViewController: UIViewController, ARSCNViewDelegate {
+class ViewController: UIViewController, ARSCNViewDelegate, BWWalkthroughViewControllerDelegate {
     
     private var startNode: SCNNode?
     private var endNode: SCNNode?
     private var lineNode: SCNNode?
     private var textNode: SCNNode?
     
+    private let device = MTLCreateSystemDefaultDevice()!
+    
+    @IBOutlet var screenshot: UIView!
     @IBOutlet var sceneView: ARSCNView!
     @IBOutlet var trackingStateLabel: UILabel!
-    @IBOutlet var statusLabel: UILabel!
     @IBOutlet var resetBtn: UIButton!
     @IBOutlet weak var mainBtn: UIButton!
+    @IBOutlet weak var captureButton: UIButton!
     
     var startPosition: SCNVector3!
+    
+    //navigationbar ボタン
+    var myRightButton: UIBarButtonItem!
     
     //timer同期用変数定義
     var isMeasuring = false
@@ -34,6 +42,7 @@ class ViewController: UIViewController, ARSCNViewDelegate {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
         
         // Set the view's delegate
         sceneView.delegate = self
@@ -51,10 +60,22 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         
         //初回reset処理
         reset()
+        
+        // 右ボタンを作成する.
+        myRightButton = UIBarButtonItem(image: UIImage(named: "info20.png"), style: .plain, target: self, action: #selector(ViewController.onClickMyButton(sender:)))
+        myRightButton.tintColor = UIColor.white
+        
+        // ナビゲーションバーの右に設置する.
+        self.navigationItem.rightBarButtonItem = myRightButton
+        
+
+        
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        
+        
         
         //ARのsession開始
         beginSession()
@@ -63,6 +84,31 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         timer = Timer.scheduledTimer(timeInterval: 0.1, target: self, selector: #selector(self.update), userInfo: nil, repeats: true)
         //timerスタート
         timer.fire()
+        
+
+        
+        //ナビゲーションバーの表示
+        navigationController?.setNavigationBarHidden(false, animated: false)
+        //backボタンの非表示
+        self.navigationItem.hidesBackButton = true
+        //バー背景色
+        self.navigationController?.navigationBar.barTintColor = UIColor.rgba(red: 99, green: 176, blue: 184, alpha: 1.0)
+        self.navigationController?.navigationBar.isTranslucent = true
+        self.navigationController?.navigationBar.alpha  = 0.85
+        
+        //バーアイテムカラー
+        self.navigationController?.navigationBar.tintColor = UIColor.white
+
+        //タイトル文字色の変更
+        self.navigationController?.navigationBar.titleTextAttributes = [
+            // 文字の色
+            .foregroundColor: UIColor.white
+        ]
+        //初期表示
+        self.title = "スタート地点を選択してください"
+        
+        
+        
         
     }
     
@@ -80,7 +126,7 @@ class ViewController: UIViewController, ARSCNViewDelegate {
     
     private func drawLine(from: SCNNode, to: SCNNode, length: Float) -> SCNNode {
         //線nodeを定義
-        let lineNode = SCNNode.lineNode(length: CGFloat(length), color: UIColor.red)
+        let lineNode = SCNNode.lineNode(length: CGFloat(length), color: UIColor.white)
         //from点nodeにlinenodeを追加
         from.addChildNode(lineNode)
         //
@@ -123,7 +169,7 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         let hitPosition = result.worldTransform.position()
         
         // 始点を配置する（始点ノードを追加）
-        startNode = putSphere(at: hitPosition, color: UIColor.blue)
+        startNode = putSphere(at: hitPosition, color: UIColor.rgba(red: 99, green: 176, blue: 184, alpha: 1))
         
     }
     
@@ -140,7 +186,7 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         let hitPosition = result.worldTransform.position()
         
         // 終点を決定する（終点ノードを追加）
-        endNode = putSphere(at: hitPosition, color: UIColor.green)
+        endNode = putSphere(at: hitPosition, color: UIColor.rgba(red: 216, green: 81, blue: 62, alpha: 1))
     }
     
     
@@ -175,8 +221,8 @@ class ViewController: UIViewController, ARSCNViewDelegate {
                 lineNode = drawLine(from: startNode, to: endNode!, length: distance)
                 
                 // ラベルに表示
-                statusLabel.text = String(format: "Distance: %.2f [cm]", distance*100)
-                
+                self.title = String(format: "Distance: %.2f cm", distance*100)
+
                 //textnode表記を作成
                 let textMessage = String(format: "%.2f cm", distance*100)
                 //textnodeの追加
@@ -196,8 +242,6 @@ class ViewController: UIViewController, ARSCNViewDelegate {
 //        //        guard let touch = touches.first else {return}
 //        //        let pos = touch.location(in: sceneView)
 //
-//        //statusLabelの表示
-//        statusLabel.isHidden = false
 //        //画面2D中心座標の取得
 //        let centerPosition2D = sceneView.center //CGPoint型
 //
@@ -223,6 +267,8 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         let text = SCNText(string: str, extrusionDepth: depth)
 //        text.font = UIFont(name: "HelveticaNeue-Light", size: 0.5);
         text.font = UIFont.systemFont(ofSize:1)
+        //flatness ポリゴンの細かさ
+        text.flatness = 0
         textNode = SCNNode(geometry: text)
         
         //textNodeの0座標をendNodeの座標に設定
@@ -241,10 +287,19 @@ class ViewController: UIViewController, ARSCNViewDelegate {
     
     @IBAction func resetBtnTapped(_ sender: UIButton) {
         
-        //alert表示前の設定
-        let alertController = UIAlertController(title: "AR初期化", message: "ARをはじめの状態にもどします。\n検知した平面は削除されます。", preferredStyle: .alert)
+        //SCLAlert
+        let appearance = SCLAlertView.SCLAppearance(
+            kTitleFont: UIFont(name: "HelveticaNeue", size: 20)!,
+            kTextFont: UIFont(name: "HelveticaNeue", size: 14)!,
+            kButtonFont: UIFont(name: "HelveticaNeue-Bold", size: 14)!,
+            showCloseButton: false
+        )
         
-        let action1 = UIAlertAction(title: "OK", style: .default) { (action:UIAlertAction) in
+        
+        let alertView = SCLAlertView(appearance: appearance)
+        //ボタンの追加
+        alertView.addButton("OK") {
+            //タップ時の処理
             print("OKが押された")
             //nodeをreset
             self.reset()
@@ -252,16 +307,39 @@ class ViewController: UIViewController, ARSCNViewDelegate {
             self.stopARsession()
             //ARsession開始
             self.beginSession()
+            //初期表示
+            self.title = "スタート地点を選択してください"
+            
         }
-        
-        let action2 = UIAlertAction(title: "キャンセル", style: .default) { (action:UIAlertAction) in
+        alertView.addButton("キャンセル") {
             print("キャンセルが押された")
         }
+        //表示実行
+        alertView.showNotice("AR初期化", subTitle: "ARをはじめの状態にもどします。\n検知した平面は削除されます。")
         
-        alertController.addAction(action1)
-        alertController.addAction(action2)
-        //alert表示
-        self.present(alertController, animated: true, completion: nil)
+//        //alert表示前の設定
+//        let alertController = UIAlertController(title: "AR初期化", message: "ARをはじめの状態にもどします。\n検知した平面は削除されます。", preferredStyle: .alert)
+//
+//        let action1 = UIAlertAction(title: "OK", style: .default) { (action:UIAlertAction) in
+//            print("OKが押された")
+//            //nodeをreset
+//            self.reset()
+//            //ARをstop
+//            self.stopARsession()
+//            //ARsession開始
+//            self.beginSession()
+//            //初期表示
+//            self.statusLabel.text = "スタート地点を選択してください"
+//        }
+//
+//        let action2 = UIAlertAction(title: "キャンセル", style: .default) { (action:UIAlertAction) in
+//            print("キャンセルが押された")
+//        }
+//
+//        alertController.addAction(action1)
+//        alertController.addAction(action2)
+//        //alert表示
+//        self.present(alertController, animated: true, completion: nil)
 
     }
     
@@ -279,12 +357,13 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         textNode?.removeFromParentNode()
         //node自体を削除
         textNode = nil
-        statusLabel.isHidden = true
         
         //isMeasuringフラグを初期化
         isMeasuring = false
         //mainBtn画像変更
         mainBtn.setImage(changeButtonImage(flag: isMeasuring), for: UIControlState())
+        
+        
     }
     
     //AR停止
@@ -301,11 +380,11 @@ class ViewController: UIViewController, ARSCNViewDelegate {
     // MARK: - ARSCNViewDelegate
     
     func renderer(_ renderer: SCNSceneRenderer, updateAtTime time: TimeInterval) {
-        guard let frame = sceneView.session.currentFrame else {return}
+        guard sceneView.session.currentFrame != nil else {return}
         DispatchQueue.main.async(execute: {
-            self.statusLabel.isHidden = !(frame.anchors.count > 0)
+//            self.statusLabel.isHidden = !(frame.anchors.count > 0)
             if self.startNode == nil {
-                self.statusLabel.text = "始点をタップしてください"
+//                self.statusLabel.text = "start pointを選択してください"
             }
         })
         
@@ -323,12 +402,23 @@ class ViewController: UIViewController, ARSCNViewDelegate {
     }
     
     func renderer(_ renderer: SCNSceneRenderer, didAdd node: SCNNode, for anchor: ARAnchor) {
+        
+        //①四角い平面を検知する場合
         guard let planeAnchor = anchor as? ARPlaneAnchor else {fatalError()}
         // 平面検知したときanchorをprint
         print("anchor:\(anchor), node: \(node), node geometry: \(String(describing: node.geometry))")
-        
+
         // 平面アンカーを可視化
         planeAnchor.addPlaneNode(on: node, color: UIColor.bookYellow.withAlphaComponent(0.1))
+        
+        //②ShapedPlaneにする場合
+//        guard let planeAnchor = anchor as? ARPlaneAnchor else {fatalError()}
+//        let planeGeometry = ARSCNPlaneGeometry(device: device)!
+//        planeGeometry.update(from: planeAnchor.geometry)
+//        planeAnchor.addPlaneNode(on: node, geometry: planeGeometry, contents: UIColor.bookYellow)
+        
+        
+        
         
         // 仮想オブジェクトのノードを作成
         let virtualObjectNode = loadModel()
@@ -388,8 +478,7 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         //        guard let touch = touches.first else {return}
         //        let pos = touch.location(in: sceneView)
         
-        //statusLabelの表示
-        statusLabel.isHidden = false
+
         //画面2D中心座標の取得
         let centerPosition2D = sceneView.center //CGPoint型
         
@@ -420,7 +509,164 @@ class ViewController: UIViewController, ARSCNViewDelegate {
             return UIImage(named:"button01.png")!//開始ボタン
         }
     }
+    
+    //スクリーンショット保存機能
+    //画面のImage生成
+    func GetImage(view: UIView) -> UIImage{
         
+        // ビットマップ画像のcontextを作成.
+        UIGraphicsBeginImageContextWithOptions(UIScreen.main.bounds.size, false, 0);
+        
+        self.view.drawHierarchy(in: view.bounds, afterScreenUpdates: true)
+        
+        // 現在のcontextのビットマップをUIImageとして取得.
+        let capturedImage:UIImage = UIGraphicsGetImageFromCurrentImageContext()!
+        // contextを閉じる.
+        UIGraphicsEndImageContext()
+        
+        
+        
+        
+          // ↓この方法だとscene Viewが真っ白になるよ。
+//        // ビットマップ画像のcontextを作成.
+//        UIGraphicsBeginImageContextWithOptions(rect.size, false, 0.0)
+//        let context: CGContext = UIGraphicsGetCurrentContext()!
+//
+//        // 対象のview内の描画をcontextに複写する.
+//        self.layer.render(in: context)
+//
+//        // 現在のcontextのビットマップをUIImageとして取得.
+//        let capturedImage : UIImage = UIGraphicsGetImageFromCurrentImageContext()!
+//
+//        // contextを閉じる.
+//        UIGraphicsEndImageContext()
+        
+        return capturedImage
+    }
+    
+    //ボタンタップ時の動作
+    @IBAction func tappedCaptureButton(_ sender: UIButton) {
+        // キャプチャ画像を取得.
+        let captureImage = GetImage(view: view) as UIImage
+        
+        // UIImage の画像をカメラロールに画像を保存
+        UIImageWriteToSavedPhotosAlbum(captureImage, self, #selector(self.showResultOfSaveImage(_:didFinishSavingWithError:contextInfo:)), nil)
+        
+    }
+    
+    
+    // 保存を試みた結果をダイアログで表示
+    @objc func showResultOfSaveImage(_ image: UIImage, didFinishSavingWithError error: NSError!, contextInfo: UnsafeMutableRawPointer) {
+        
+        //エラーSCLAlert
+        if error != nil {
+            let appearance = SCLAlertView.SCLAppearance(
+                kTitleFont: UIFont(name: "HelveticaNeue", size: 20)!,
+                kTextFont: UIFont(name: "HelveticaNeue", size: 14)!,
+                kButtonFont: UIFont(name: "HelveticaNeue-Bold", size: 14)!,
+                showCloseButton: false
+            )
+            
+            let alertView = SCLAlertView(appearance: appearance)
+            //ボタンの追加
+            alertView.addButton("OK") {
+                //タップ時の処理
+                print("保存エラー！")
+            }
+
+            //表示実行
+            alertView.showInfo("エラー", subTitle: "保存に失敗しました")
+        }else{
+            // 成功SCLAlert
+            let appearance = SCLAlertView.SCLAppearance(
+                kTitleFont: UIFont(name: "HelveticaNeue", size: 20)!,
+                kTextFont: UIFont(name: "HelveticaNeue", size: 14)!,
+                kButtonFont: UIFont(name: "HelveticaNeue-Bold", size: 14)!,
+                showCloseButton: false
+            )
+            
+            let alertView = SCLAlertView(appearance: appearance)
+            //ボタンの追加
+            alertView.addButton("OK") {
+                //タップ時の処理
+                print("保存成功")
+            }
+            
+            //表示実行
+            alertView.showSuccess("保存完了", subTitle: "カメラロールに保存しました")
+        }
+        
+//        var title = "保存完了"
+//        var message = "カメラロールに保存しました"
+//
+//        if error != nil {
+//            title = "エラー"
+//            message = "保存に失敗しました"
+//        }
+//
+//        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+//
+//        // OKボタンを追加
+//        alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+//
+//        // UIAlertController を表示
+//        self.present(alert, animated: true, completion: nil)
+    }
+    
+    //画像を保存する関数
+    private func saveImage (image: UIImage, fileName: String ) -> Bool{
+        //pngで保存する場合
+        let pngImageData = UIImagePNGRepresentation(image)
+        // jpgで保存する場合
+        //    let jpgImageData = UIImageJPEGRepresentation(image, 1.0)
+        let documentsURL = FileManager.default.urls(for: .libraryDirectory, in: .userDomainMask)[0]
+        let fileURL = documentsURL.appendingPathComponent(fileName)
+        do {
+            try pngImageData!.write(to: fileURL)
+        } catch {
+            //エラー処理
+            return false
+        }
+        return true
+    }
+    
+    //起動時の注意アラート
+    func initialAlert(){
+        
+        //SCLAlertViewを利用
+        let appearance = SCLAlertView.SCLAppearance(
+            kTitleFont: UIFont(name: "HelveticaNeue", size: 20)!,
+            kTextFont: UIFont(name: "HelveticaNeue", size: 14)!,
+            kButtonFont: UIFont(name: "HelveticaNeue-Bold", size: 14)!,
+            showCloseButton: false
+        )
+        
+        
+        let alertView = SCLAlertView(appearance: appearance)
+        //ボタンの追加
+        alertView.addButton("OK") {
+
+        }
+        //表示実行
+        alertView.showInfo("はじめに", subTitle: "カメラで読み込むまで\n３秒ほどお待ちください😣\n平面を検知すると\n精度が上がります👍\nアヒルはオマケ🐤")
+
+//        //alert表示前の設定
+//        let alertController = UIAlertController(
+//            title: "はじめに",
+//            message: "カメラで読み込むまで\n３秒ほどお待ちください😣\n平面を検知すると精度が上がります👍\nアヒルはオマケ🐤",
+//            preferredStyle: .alert)
+//
+//        let action1 = UIAlertAction(title: "OK", style: .default) { (action:UIAlertAction) in
+//
+//        }
+//
+//        //Actionの設定
+//        alertController.addAction(action1)
+//
+//        //alert表示
+//        self.present(alertController, animated: true, completion: nil)
+    }
+
         
     
     //debag用onoffスイッチ
@@ -439,7 +685,75 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         
     }
     
+
     
+    
+    //初回起動時はチュートリアルへ
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        
+        print("showWalkthrough")
+        
+        let userDefaults = UserDefaults.standard
+        
+            if !userDefaults.bool(forKey: "walkthroughPresented") {
+    
+                showWalkthrough()
+    
+                userDefaults.set(true, forKey: "walkthroughPresented")
+                userDefaults.synchronize()
+            }
+        
+    }
+    
+    //WalkThrough画面表示
+    func showWalkthrough(){
+        
+        print("showWalkthrough2")
+        // Get view controllers and build the walkthrough
+        let stb = UIStoryboard(name: "Walkthrough", bundle: nil)
+        let walkthrough = stb.instantiateViewController(withIdentifier: "walk") as! BWWalkthroughViewController
+        
+        let page_one = stb.instantiateViewController(withIdentifier: "walk1")
+        let page_two = stb.instantiateViewController(withIdentifier: "walk2")
+        let page_three = stb.instantiateViewController(withIdentifier: "walk3")
+        let page_four = stb.instantiateViewController(withIdentifier: "walk4")
+        
+        // Attach the pages to the master
+        walkthrough.delegate = self
+        walkthrough.add(viewController:page_one)
+        walkthrough.add(viewController:page_two)
+        walkthrough.add(viewController:page_three)
+        walkthrough.add(viewController:page_four)
+        
+        self.present(walkthrough, animated: true, completion: nil)
+    }
+    
+    func walkthroughPageDidChange(_ pageNumber: Int) {
+        print("Current Page \(pageNumber)")
+    }
+    
+    //closdボタンタップ時の動作
+    func walkthroughCloseButtonPressed() {
+        self.dismiss(animated: true, completion: nil)
+        
+        //はじめに注意アラート
+        initialAlert()
+    }
+    
+    //navigationbar ボタンタップ
+    @objc func onClickMyButton(sender: UIButton){
+        showWalkthrough()
+    }
     
 
+    
 }
+
+//RGB 255段階表記
+extension UIColor {
+    class func rgba(red: Int, green: Int, blue: Int, alpha: CGFloat) -> UIColor{
+        return UIColor(red: CGFloat(red) / 255.0, green: CGFloat(green) / 255.0, blue: CGFloat(blue) / 255.0, alpha: alpha)
+    }
+}
+

@@ -8,6 +8,7 @@
 
 import UIKit
 
+//文字幅間の調整
 @IBDesignable
 class KerningLabel: UILabel {
     @IBInspectable var kerning: CGFloat = 0.0 {

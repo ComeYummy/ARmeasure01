@@ -14,7 +14,7 @@ extension UIColor {
 extension SCNNode {
     
     class func sphereNode(color: UIColor) -> SCNNode {
-        let geometry = SCNSphere(radius: 0.01)
+        let geometry = SCNSphere(radius: 0.007)
         geometry.materials.first?.diffuse.contents = color
         return SCNNode(geometry: geometry)
     }
@@ -50,7 +50,7 @@ extension SCNNode {
     class func lineNode(length: CGFloat, color: UIColor) -> SCNNode {
         
         // 線としてのカプセル型ジオメトリを持つノード
-        let geometry = SCNCapsule(capRadius: 0.004, height: length) // 半径4cm
+        let geometry = SCNCapsule(capRadius: 0.002, height: length) // 半径4cm
         geometry.materials.first?.diffuse.contents = color
         let line = SCNNode(geometry: geometry)
         
