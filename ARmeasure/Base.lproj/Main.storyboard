@@ -160,13 +160,21 @@ No Measure, No Life.
                                 </connections>
                             </button>
                             <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" translatesAutoresizingMaskIntoConstraints="NO" id="sRC-bU-hza">
-                                <rect key="frame" x="312" y="119" width="49" height="31"/>
+                                <rect key="frame" x="16" y="114" width="49" height="31"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <color key="onTintColor" red="0.93725490199999995" green="0.3294117647" blue="0.3921568627" alpha="1" colorSpace="calibratedRGB"/>
                                 <connections>
                                     <action selector="debugSwitch:" destination="BYZ-38-t0r" eventType="valueChanged" id="LSq-ig-6oX"/>
                                 </connections>
                             </switch>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="zcU-lo-mlq">
+                                <rect key="frame" x="295" y="104" width="50" height="50"/>
+                                <color key="backgroundColor" red="1" green="0.39651343319999999" blue="0.3770228987" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="50" id="FVS-Gr-AiY"/>
+                                    <constraint firstAttribute="width" constant="50" id="MaQ-MH-CqO"/>
+                                </constraints>
+                            </view>
                         </subviews>
                         <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
@@ -181,7 +189,9 @@ No Measure, No Life.
                             <constraint firstItem="6Tk-OE-BBY" firstAttribute="bottom" secondItem="LVb-gV-lWR" secondAttribute="bottom" constant="20" id="gcW-xv-Pe3"/>
                             <constraint firstItem="goQ-cv-j72" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" id="igJ-Zv-maN"/>
                             <constraint firstItem="6Tk-OE-BBY" firstAttribute="bottom" secondItem="8as-Th-foC" secondAttribute="bottom" constant="54" id="jEi-Cn-BEC"/>
+                            <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="zcU-lo-mlq" secondAttribute="trailing" constant="30" id="n6o-2B-eMj"/>
                             <constraint firstAttribute="bottom" secondItem="goQ-cv-j72" secondAttribute="bottom" id="oiL-Nt-6ti"/>
+                            <constraint firstItem="zcU-lo-mlq" firstAttribute="top" secondItem="6Tk-OE-BBY" secondAttribute="top" constant="16" id="rvc-rY-Cxb"/>
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
                     </view>
@@ -193,6 +203,7 @@ No Measure, No Life.
                         <outlet property="sceneView" destination="goQ-cv-j72" id="wU4-eX-aIX"/>
                         <outlet property="screenshot" destination="8bC-Xf-vdC" id="jsU-BV-p6O"/>
                         <outlet property="trackingStateLabel" destination="frC-0A-Wgr" id="g2F-7o-cSs"/>
+                        <outlet property="unitView" destination="zcU-lo-mlq" id="L8b-wh-WtA"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>

@@ -11,8 +11,9 @@ import SceneKit
 import ARKit
 import SCLAlertView
 import BWWalkthrough
+import PathMenu
 
-class ViewController: UIViewController, ARSCNViewDelegate, BWWalkthroughViewControllerDelegate {
+class ViewController: UIViewController, ARSCNViewDelegate, BWWalkthroughViewControllerDelegate, PathMenuDelegate {
     
     private var startNode: SCNNode?
     private var endNode: SCNNode?
@@ -28,6 +29,10 @@ class ViewController: UIViewController, ARSCNViewDelegate, BWWalkthroughViewCont
     @IBOutlet weak var mainBtn: UIButton!
     @IBOutlet weak var captureButton: UIButton!
     
+    @IBOutlet weak var unitView: UIView!
+    var unitViewLabel: UILabel?
+    
+    
     var startPosition: SCNVector3!
     
     //navigationbar ボタン
@@ -36,6 +41,16 @@ class ViewController: UIViewController, ARSCNViewDelegate, BWWalkthroughViewCont
     //timer同期用変数定義
     var isMeasuring = false
     var timer: Timer!
+    
+    //unit背景色のcolorlist
+    let colorlist = [UIColor(red: 253/255, green: 193/255, blue: 79/255, alpha: 1),
+                     UIColor(red: 94/255, green: 186/255, blue: 186/255, alpha: 1),
+                     UIColor(red: 141/255, green: 207/255, blue: 63/255, alpha: 1),
+                     UIColor(red: 245/255, green: 142/255, blue: 126/255, alpha: 1),
+                     UIColor(red: 121/255, green: 209/255, blue: 176/255, alpha: 1),
+                     UIColor(red: 51/255, green: 191/255, blue: 219/255, alpha: 1)
+                    ]
+    let unitlist = ["cm", "m", "in", "ft", "yd","尺"]
     
     //ARsessionフラグ
 //    var ARsessionFlag = false
@@ -61,12 +76,19 @@ class ViewController: UIViewController, ARSCNViewDelegate, BWWalkthroughViewCont
         //初回reset処理
         reset()
         
-        // 右ボタンを作成する.
+        // navバーに情報ボタンを作成する.（チュートリアルへの遷移）
         myRightButton = UIBarButtonItem(image: UIImage(named: "info20.png"), style: .plain, target: self, action: #selector(ViewController.onClickMyButton(sender:)))
         myRightButton.tintColor = UIColor.white
         
         // ナビゲーションバーの右に設置する.
         self.navigationItem.rightBarButtonItem = myRightButton
+        
+        //unitViewの表示（初期はｃｍ）
+        unitViewLabel?.text = ""
+        showUnitViewFromText(text: unitlist[0], color:colorlist[0])
+        unitView.addSubview(unitViewLabel!)
+        //pathmenuの表示
+        showPathmenu()
         
 
         
@@ -744,6 +766,159 @@ class ViewController: UIViewController, ARSCNViewDelegate, BWWalkthroughViewCont
     //navigationbar ボタンタップ
     @objc func onClickMyButton(sender: UIButton){
         showWalkthrough()
+    }
+    
+    //unitImageViewの設定と表示
+    func showUnitViewFromText(text:String, color: UIColor){
+        unitView.backgroundColor = color
+        unitView.layer.masksToBounds = true
+        unitView.layer.cornerRadius = unitView.frame.width/2
+        
+        //既存のlabel
+        //UILabel定義
+        unitViewLabel = UILabel(frame: CGRect(x: 0, y: 0, width: unitView.frame.width, height: unitView.frame.height))
+        unitViewLabel?.textColor = UIColor.white
+        // UILabelに文字を代入.
+        unitViewLabel?.text = text
+        //font選択
+        unitViewLabel?.font = UIFont(name: "Helvetica Neue", size: UIFont.labelFontSize)
+        // Textを中央寄せにする.
+        unitViewLabel?.textAlignment = NSTextAlignment.center
+    }
+    
+    
+    //Pathmenu用UIImage設定
+    func getUIImageFromText(text: String, color: UIColor) -> UIImage {
+        
+        let radius:CGFloat = 18.0
+        // Labelを作成.
+        let label: UILabel = UILabel(frame: CGRect(x: 0, y: 0, width: radius*2, height: radius*2))
+        
+        // UILabelの背景をオレンジ色に.
+        label.backgroundColor = color
+        
+        // UILabelの枠を丸くする.
+        label.layer.masksToBounds = true
+        
+        // 丸くするコーナーの半径.
+        label.layer.cornerRadius = radius
+        
+        // 文字の色を白に定義.
+        label.textColor = UIColor.white
+        
+        //font選択
+        label.font = UIFont(name: "Helvetica Neue", size: UIFont.labelFontSize)
+        
+        // UILabelに文字を代入.
+        label.text = text
+        
+        // Textを中央寄せにする.
+        label.textAlignment = NSTextAlignment.center
+        
+        //UIViewをUIimageに変換
+        UIGraphicsBeginImageContextWithOptions(label.frame.size, false, 2.0)
+        label.layer.render(in: UIGraphicsGetCurrentContext()!)
+        let image = UIGraphicsGetImageFromCurrentImageContext()
+        UIGraphicsEndImageContext()
+        return image!
+    }
+    
+    //pathmenu表示
+    func showPathmenu(){
+        let menuItemImage1 = getUIImageFromText(text: "", color: UIColor.init(red: 253/255, green: 193/255, blue: 79/255, alpha: 1))
+        let menuItemImage2 = getUIImageFromText(text: "", color: UIColor.init(red: 94/255, green: 186/255, blue: 186/255, alpha: 1))
+        let menuItemImage3 = getUIImageFromText(text: "", color: UIColor.init(red: 141/255, green: 207/255, blue: 63/255, alpha: 1))
+        let menuItemImage4 = getUIImageFromText(text: "", color: UIColor.init(red: 245/255, green: 142/255, blue: 126/255, alpha: 1))
+        let menuItemImage5 = getUIImageFromText(text: "", color: UIColor.init(red: 121/255, green: 209/255, blue: 176/255, alpha: 1))
+        let menuItemImage6 = getUIImageFromText(text: "", color: UIColor.init(red: 51/255, green: 191/255, blue: 219/255, alpha: 1))
+        
+
+        
+        let menuItemImage = UIImage(named: "bg-menuitem")!
+        let menuItemHighlitedImage = UIImage(named: "bg-menuitem-highlighted")!
+
+        let starImage1 = getUIImageFromText(text: "cm", color: UIColor.clear)
+        let starImage2 = getUIImageFromText(text: "m", color: UIColor.clear)
+        let starImage3 = getUIImageFromText(text: "in", color: UIColor.clear)
+        let starImage4 = getUIImageFromText(text: "ft", color: UIColor.clear)
+        let starImage5 = getUIImageFromText(text: "yd", color: UIColor.clear)
+        let starImage6 = getUIImageFromText(text: "尺", color: UIColor.clear)
+        
+        let starMenuItem1 = PathMenuItem(image: menuItemImage1, highlightedImage: menuItemHighlitedImage, contentImage: starImage1)
+        
+        let starMenuItem2 = PathMenuItem(image: menuItemImage2, highlightedImage: menuItemHighlitedImage, contentImage: starImage2)
+        
+        let starMenuItem3 = PathMenuItem(image: menuItemImage3, highlightedImage: menuItemHighlitedImage, contentImage: starImage3)
+        
+        let starMenuItem4 = PathMenuItem(image: menuItemImage4, highlightedImage: menuItemHighlitedImage, contentImage: starImage4)
+        
+        let starMenuItem5 = PathMenuItem(image: menuItemImage5, highlightedImage: menuItemHighlitedImage, contentImage: starImage5)
+        
+        let starMenuItem6 = PathMenuItem(image: menuItemImage6, highlightedImage: menuItemHighlitedImage, contentImage: starImage6)
+        
+        let items = [starMenuItem1, starMenuItem2, starMenuItem3, starMenuItem4, starMenuItem5, starMenuItem6]
+        
+        let startItem = PathMenuItem(image: UIImage(named: "bg-addbutton")!,
+                                 highlightedImage: UIImage(named: "bg-addbutton-highlighted"),
+                                 contentImage: UIImage(named: "icon-plus"),
+                                 highlightedContentImage: UIImage(named: "icon-plus-highlighted"))
+        
+        let menu = PathMenu(frame: view.bounds, startItem: startItem, items: items)
+        menu.delegate = self
+        menu.startPoint     = CGPoint(x: UIScreen.main.bounds.width - 30, y: 160)
+        menu.menuWholeAngle = CGFloat(Double.pi * 120/180)
+        menu.rotateAngle    = CGFloat(Double.pi)
+        //        menu.menuWholeAngle = CGFloat(Double.pi) - CGFloat(Double.pi/5)
+        //        menu.rotateAngle    = -CGFloat(Double.pi/2) + CGFloat(Double.pi/5) * 1/2
+        menu.timeOffset     = 0.05
+        menu.farRadius      = 110.0
+        menu.nearRadius     = 90.0
+        menu.endRadius      = 100.0
+        menu.animationDuration = 0.5
+        
+        view.addSubview(menu)
+//        view.backgroundColor = UIColor(red:0.96, green:0.94, blue:0.92, alpha:1)
+    }
+    
+    //pathmenu用delegate
+    func didSelect(on menu: PathMenu, index: Int) {
+        
+        
+        print("Select the index : \(index)")
+        switch index {
+        case 0:
+            print("ここに選択したときの動きを規定")
+            showUnitViewFromText(text: unitlist[0], color:colorlist[0])
+        case 1:
+            showUnitViewFromText(text: unitlist[1], color:colorlist[1])
+        case 2:
+            showUnitViewFromText(text: unitlist[2], color:colorlist[2])
+        case 3:
+            showUnitViewFromText(text: unitlist[3], color:colorlist[3])
+        case 4:
+            showUnitViewFromText(text: unitlist[4], color:colorlist[4])
+        case 5:
+            showUnitViewFromText(text: unitlist[5], color:colorlist[5])
+            print(unitViewLabel?.text)
+        default:
+            print("default")
+        }
+    }
+    
+    func willStartAnimationOpen(on menu: PathMenu) {
+        print("Menu will open!")
+    }
+    
+    func willStartAnimationClose(on menu: PathMenu) {
+        print("Menu will close!")
+    }
+    
+    func didFinishAnimationOpen(on menu: PathMenu) {
+        print("Menu was open!")
+    }
+    
+    func didFinishAnimationClose(on menu: PathMenu) {
+        print("Menu was closed!")
     }
     
 
