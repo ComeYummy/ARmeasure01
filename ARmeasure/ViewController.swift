@@ -256,31 +256,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, BWWalkthroughViewCont
     }
     
     
-    // MARK: - Touch Handlers
-    
-    //画面全体タップを認識する場合。
-//    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
-//        //        // タップ位置のスクリーン座標を取得
-//        //        guard let touch = touches.first else {return}
-//        //        let pos = touch.location(in: sceneView)
-//
-//        //画面2D中心座標の取得
-//        let centerPosition2D = sceneView.center //CGPoint型
-//
-//        //isMeasuringで場合分け
-//        if isMeasuring == false {
-//            //reset処理
-//            reset()
-//            //isMeasuringのフラグ変更
-//            isMeasuring = true
-//            //hitTest&始点の配置
-//            hitTestToSphere(centerPosition2D)
-//        //isMeasuringがtrueのときに画面タップ時の動作
-//        }else if isMeasuring == true {
-//            //isMeasuringのフラグ変更, これでupdateの動作が止まる。
-//            isMeasuring = false
-//        }
-//    }
+
     
     //計測した距離をAR上にテキスト表示
     func appendtText(message:String){
@@ -339,29 +315,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, BWWalkthroughViewCont
         //表示実行
         alertView.showNotice("AR初期化", subTitle: "ARをはじめの状態にもどします。\n検知した平面は削除されます。")
         
-//        //alert表示前の設定
-//        let alertController = UIAlertController(title: "AR初期化", message: "ARをはじめの状態にもどします。\n検知した平面は削除されます。", preferredStyle: .alert)
-//
-//        let action1 = UIAlertAction(title: "OK", style: .default) { (action:UIAlertAction) in
-//            print("OKが押された")
-//            //nodeをreset
-//            self.reset()
-//            //ARをstop
-//            self.stopARsession()
-//            //ARsession開始
-//            self.beginSession()
-//            //初期表示
-//            self.statusLabel.text = "スタート地点を選択してください"
-//        }
-//
-//        let action2 = UIAlertAction(title: "キャンセル", style: .default) { (action:UIAlertAction) in
-//            print("キャンセルが押された")
-//        }
-//
-//        alertController.addAction(action1)
-//        alertController.addAction(action2)
-//        //alert表示
-//        self.present(alertController, animated: true, completion: nil)
+
 
     }
     
@@ -547,22 +501,6 @@ class ViewController: UIViewController, ARSCNViewDelegate, BWWalkthroughViewCont
         UIGraphicsEndImageContext()
         
         
-        
-        
-          // ↓この方法だとscene Viewが真っ白になるよ。
-//        // ビットマップ画像のcontextを作成.
-//        UIGraphicsBeginImageContextWithOptions(rect.size, false, 0.0)
-//        let context: CGContext = UIGraphicsGetCurrentContext()!
-//
-//        // 対象のview内の描画をcontextに複写する.
-//        self.layer.render(in: context)
-//
-//        // 現在のcontextのビットマップをUIImageとして取得.
-//        let capturedImage : UIImage = UIGraphicsGetImageFromCurrentImageContext()!
-//
-//        // contextを閉じる.
-//        UIGraphicsEndImageContext()
-        
         return capturedImage
     }
     
@@ -618,21 +556,6 @@ class ViewController: UIViewController, ARSCNViewDelegate, BWWalkthroughViewCont
             alertView.showSuccess("保存完了", subTitle: "カメラロールに保存しました")
         }
         
-//        var title = "保存完了"
-//        var message = "カメラロールに保存しました"
-//
-//        if error != nil {
-//            title = "エラー"
-//            message = "保存に失敗しました"
-//        }
-//
-//        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
-//
-//        // OKボタンを追加
-//        alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
-//
-//        // UIAlertController を表示
-//        self.present(alert, animated: true, completion: nil)
     }
     
     //画像を保存する関数
@@ -672,21 +595,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, BWWalkthroughViewCont
         //表示実行
         alertView.showInfo("はじめに", subTitle: "カメラで読み込むまで\n３秒ほどお待ちください😣\n平面を検知すると\n精度が上がります👍\nアヒルはオマケ🐤")
 
-//        //alert表示前の設定
-//        let alertController = UIAlertController(
-//            title: "はじめに",
-//            message: "カメラで読み込むまで\n３秒ほどお待ちください😣\n平面を検知すると精度が上がります👍\nアヒルはオマケ🐤",
-//            preferredStyle: .alert)
-//
-//        let action1 = UIAlertAction(title: "OK", style: .default) { (action:UIAlertAction) in
-//
-//        }
-//
-//        //Actionの設定
-//        alertController.addAction(action1)
-//
-//        //alert表示
-//        self.present(alertController, animated: true, completion: nil)
+
     }
 
         
